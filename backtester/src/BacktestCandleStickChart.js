@@ -6,7 +6,7 @@ import { CandlestickController, CandlestickElement } from 'chartjs-chart-financi
 
 ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
 
-const CustomChart = () => {
+const BacktestCandleStickChart = () => {
     const [chartData, setChartData] = useState({ datasets: [] });
     const [stats, setStats] = useState({});
     const chartRef = useRef(null);
@@ -14,7 +14,7 @@ const CustomChart = () => {
     useEffect(() => {
         const fetchData = async () => {
             // Replace this with your actual endpoint or method to fetch data
-            const response = await fetch('/chart-data');
+            const response = await fetch('/backtest-candlestick-data');
             const data = await response.json();
 
             setChartData({
@@ -150,4 +150,4 @@ const CustomChart = () => {
     );
 };
 
-export default CustomChart;
+export default BacktestCandleStickChart;
