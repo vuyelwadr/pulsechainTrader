@@ -6,7 +6,7 @@ import { CandlestickController, CandlestickElement } from 'chartjs-chart-financi
 
 ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
 
-const CustomChart = () => {
+const TradeChart = () => {
     const [chartData, setChartData] = useState({ datasets: [] });
     const [stats, setStats] = useState({});
     const chartRef = useRef(null);
@@ -14,31 +14,26 @@ const CustomChart = () => {
     useEffect(() => {
         const fetchData = async () => {
             // Replace this with your actual endpoint or method to fetch data
-            const response = await fetch('/chart-data');
+            const response = await fetch('/trade-data');
             const data = await response.json();
 
             setChartData({
                 datasets: [
-                    {
-                        type: 'candlestick',
-                        label: 'Candlestick',
-                        data: data.timestamps.map((timestamp, index) => ({
-                            x: timestamp,
-                            o: data.openPrices[index],
-                            h: data.highPrices[index],
-                            l: data.lowPrices[index],
-                            c: data.closePrices[index],
-                        })),
-                        borderColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black border
-                        borderWidth: 2,
-                        backgroundColor: 'rgba(0, 0, 0, 0.1)', // Slightly transparent black background
-                    },
                     {
                         type: 'line',
                         label: 'SMA',
                         data: data.timestamps.map((timestamp, index) => ({ x: timestamp, y: data.sma[index] })),
                         backgroundColor: 'rgba(255, 165, 0, 0.2)',
                         borderColor: 'rgba(255, 206, 86, 1)',
+                        borderWidth: 4,
+                        pointRadius: 0,
+                    },
+                    {
+                        type: 'line',
+                        label: 'Price',
+                        data: data.timestamps.map((timestamp, index) => ({ x: timestamp, y: data.price[index] })),
+                        backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+                        borderColor: 'rgba(0, 0, 0, 1)',  
                         borderWidth: 4,
                         pointRadius: 0,
                     },
@@ -52,7 +47,7 @@ const CustomChart = () => {
                         backgroundColor: data.buySellPoints.map(point => point.type === 'buy' ? 'green' : 'red'),
                         borderColor: data.buySellPoints.map(point => point.type === 'buy' ? 'green' : 'red'),
                         borderWidth: 4,
-                        pointRadius: 8,
+                        pointRadius: 4,
                     }
                 ]
             });
@@ -114,31 +109,43 @@ const CustomChart = () => {
     }, []);
 */
 
-    const options = {
-        scales: {
-            x: {
-                type: 'time',
-                time: {
-                    unit: 'day',
-                    tooltipFormat: 'MMM DD',
-                }
+const options = {
+    scales: {
+        x: {
+            type: 'time',
+            time: {
+                unit: 'day',
+                tooltipFormat: 'MMM DD',
             },
-            y: {
-                beginAtZero: false,
-                ticks: {
-                    callback: function(value) {
-                        return value.toFixed(10);  // Format the tick values to 5 decimal places
-                    }
+            // time: {
+            //     unit: 'hour',  // Display the time in hours
+            //     tooltipFormat: 'MMM DD, HH:mm', // Format for the tooltip
+            // },
+            title: {
+                display: true,
+                text: 'Time (Hours)',  // Label for the x-axis
+            }
+        },
+        y: {
+            beginAtZero: false,
+            title: {
+                display: true,
+                text: 'Value',  // Label for the y-axis
+            },
+            ticks: {
+                callback: function(value) {
+                    return value.toFixed(10);  // Format the tick values to 5 decimal places
                 }
             }
         }
-    };
+    }
+};
 
     return (
         <div>
             <Chart ref={chartRef} type='candlestick' data={chartData} options={options} />
             <div className="stats">
-            <h2>Statistics</h2>
+                <h2>Statistics</h2>
                 <p>Initial Capital: {stats.initialCapital}</p>
                 <p>Buy and Hold Profit: {stats.buyAndHoldProfit} {stats.buyAndHoldProfit / stats.initialCapital * 100}%</p>
                 <p>Total Profit: {stats.totalProfit} {stats.totalProfit / stats.initialCapital * 100}%</p>
@@ -150,4 +157,4 @@ const CustomChart = () => {
     );
 };
 
-export default CustomChart;
+export default TradeChart;
