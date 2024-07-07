@@ -1,14 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Chart } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement, ScatterController } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 
-ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement,PointElement,LineElement,  Title, Tooltip, Legend, TimeScale);
+ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
 
 const CustomChart = () => {
     const [chartData, setChartData] = useState({ datasets: [] });
     const chartRef = useRef(null);
+
     useEffect(() => {
         const fetchData = async () => {
             // Replace this with your actual endpoint or method to fetch data
@@ -28,10 +29,8 @@ const CustomChart = () => {
                             c: data.closePrices[index],
                         })),
                         borderColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent black border
-                        
                         borderWidth: 2,
                         backgroundColor: 'rgba(0, 0, 0, 0.1)', // Slightly transparent black background
-                    
                     },
                     {
                         type: 'line',
@@ -41,6 +40,18 @@ const CustomChart = () => {
                         borderColor: 'rgba(255, 206, 86, 1)',
                         borderWidth: 4,
                         pointRadius: 0,
+                    },
+                    {
+                        type: 'scatter',
+                        label: 'Buy/Sell Points',
+                        data: data.buySellPoints.map(point => ({
+                            x: point.timestamp,
+                            y: point.sma,
+                        })),
+                        backgroundColor: data.buySellPoints.map(point => point.type === 'buy' ? 'green' : 'red'),
+                        borderColor: data.buySellPoints.map(point => point.type === 'buy' ? 'green' : 'red'),
+                        borderWidth: 4,
+                        pointRadius: 8,
                     }
                 ]
             });
@@ -52,9 +63,7 @@ const CustomChart = () => {
     useEffect(() => {
         const updateChart = () => {
             if (!chartRef.current) return;
-            // const chart = chartRef.current;
             const chart = chartRef.current.chartInstance;
-            console.log(chart)
 
             const type = document.getElementById('type').value;
             chart.config.type = type;
@@ -109,7 +118,7 @@ const CustomChart = () => {
         }
     };
 
-    return <Chart type='candlestick' data={chartData} options={options} />;
+    return <Chart ref={chartRef} type='candlestick' data={chartData} options={options} />;
 };
 
 export default CustomChart;
