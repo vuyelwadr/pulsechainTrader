@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require('path');
 const { getPls, getDai, getDaiPlsBalances, MIN_PLS_BALANCE } = require("./pulsex");
 const { InsufficientInputAmountError } =  require('@uniswap/sdk')
+// const { Writable } = require('stream');
 
 
 require("dotenv").config();
@@ -278,6 +279,21 @@ function logErrorToFile(error) {
     }
   });
 }
+
+
+// Create a writable stream to capture console.log output
+// const logStream = new Writable({
+//   write(chunk, encoding, callback) {
+//     console.log(chunk.toString()); // Output each log message
+//     callback();
+//   },
+// });
+
+// // Redirect console.log to logStream
+// console.log = function(message) {
+//   logStream.write(message + '\n');
+// };
+
 
 
 // Correctly export the functions

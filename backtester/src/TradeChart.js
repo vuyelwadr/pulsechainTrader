@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Chart } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement, ScatterController } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement, ScatterController, LineController } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 
-ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
+ChartJS.register(CategoryScale, LinearScale, CandlestickController,LineController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
 
 const TradeChart = () => {
     const [chartData, setChartData] = useState({ datasets: [] });
@@ -17,8 +17,6 @@ const TradeChart = () => {
             const response = await fetch('/chart-data');
             const data = await response.json();
 
-            console.log(data);
-
             setChartData({
                 datasets: [
                     {
@@ -27,7 +25,7 @@ const TradeChart = () => {
                         data: data.timestamps.map((timestamp, index) => ({ x: timestamp, y: data.sma[index] })),
                         backgroundColor: 'rgba(255, 165, 0, 0.2)',
                         borderColor: 'rgba(255, 206, 86, 1)',
-                        borderWidth: 4,
+                        borderWidth: 2,
                         pointRadius: 0,
                     },
                     {
@@ -36,7 +34,7 @@ const TradeChart = () => {
                         data: data.timestamps.map((timestamp, index) => ({ x: timestamp, y: data.price[index] })),
                         backgroundColor: 'rgba(0, 0, 0, 0.2)', 
                         borderColor: 'rgba(0, 0, 0, 1)',  
-                        borderWidth: 4,
+                        borderWidth: 2,
                         pointRadius: 0,
                     },
                     {

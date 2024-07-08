@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Chart } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement, ScatterController } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement, ScatterController,LineController } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
 
-ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
+ChartJS.register(CategoryScale, LinearScale, CandlestickController, CandlestickElement, ScatterController, PointElement, LineElement,LineController, Title, Tooltip, Legend, TimeScale);
 
 const TradeChart = () => {
     const [chartData, setChartData] = useState({ datasets: [] });

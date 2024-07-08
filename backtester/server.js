@@ -1,15 +1,24 @@
+require('dotenv').config();
+const cron = require('node-cron');
 const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
 const { calculateSMA, backtestStrategy, getCoinGeckoData, executeLiveTrade, getPosition, loadJsonFile } = require("./functions");
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
+const cronSchedule = process.env.CRON_SCHEDULE || '*/15 * * * *';
 
 let initialCapital = 1000; // Starting capital
 
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, "build")));
+
+// New endpoint to fetch the base URL
+app.get("/base-url", (req, res) => {
+  const fullUrl = `${req.protocol}://${req.get('host')}`;
+  res.json({ baseUrl: fullUrl });
+});
 
 // Serve the chart data
 app.get("/backtest-candlestick-data", (req, res) => {
@@ -97,45 +106,8 @@ app.get("/backtest-data", (req, res) => {
 
 
 app.get("/live-data", async (req, res)  => {
-    // await getCoinGeckoData();
-    const rawData = JSON.parse(fs.readFileSync("coingecko.json", "utf-8"));
-  
-    var priceData = rawData.prices.map((item) => {
-      return {
-        time: parseInt(item[0], 10), // Convert to milliseconds
-        close: parseFloat(item[1]),
-      };
-    });
-  
-    // for (let i = 2; i < 50; i++) {
-    //     var smaValues = calculateSMA(priceData, i);
-    //     backtestStrategy(smaValues, i, priceData, initialCapital)
-    // }
-  
-    var smaPeriod = 4; //14
-    var smaValues = calculateSMA(priceData, smaPeriod);
-    // var position = await getPosition()
-    await executeLiveTrade(priceData, smaValues) 
-   
-
-    // buySellPoints = backtestStrategy(
-    //   smaValues,
-    //   smaPeriod,
-    //   priceData,
-    //   initialCapital
-    // );
-
-    const buySellPoints = await loadJsonFile('trades.json');
-
-
-  
-    res.json({
-      timestamps: priceData.map((item) => item.time),
-      price: priceData.map((item) => item.close),
-      sma: smaValues,
-  
-      buySellPoints: buySellPoints,
-    });
+    const data = await getLiveData()
+    res.json(data);
   });
 
   app.get("/chart-data", async (req, res)  => {
@@ -163,6 +135,48 @@ app.get("/live-data", async (req, res)  => {
     });
   });
 
+  async function getLiveData() {
+      await getCoinGeckoData();
+      const rawData = JSON.parse(fs.readFileSync("coingecko.json", "utf-8"));
+  
+      var priceData = rawData.prices.map((item) => {
+        return {
+          time: parseInt(item[0], 10), // Convert to milliseconds
+          close: parseFloat(item[1]),
+        };
+      });
+    
+      // for (let i = 2; i < 50; i++) {
+      //     var smaValues = calculateSMA(priceData, i);
+      //     backtestStrategy(smaValues, i, priceData, initialCapital)
+      // }
+    
+      var smaPeriod = 4; //14
+      var smaValues = calculateSMA(priceData, smaPeriod);
+      // var position = await getPosition()
+      await executeLiveTrade(priceData, smaValues) 
+     
+  
+      // buySellPoints = backtestStrategy(
+      //   smaValues,
+      //   smaPeriod,
+      //   priceData,
+      //   initialCapital
+      // );
+  
+      const buySellPoints = await loadJsonFile('trades.json');
+  
+  
+    
+      return {
+        timestamps: priceData.map((item) => item.time),
+        price: priceData.map((item) => item.close),
+        sma: smaValues,
+    
+        buySellPoints: buySellPoints,
+      };
+  }
+
 
 // All other GET requests not handled before will return the React app
 app.get("*", (req, res) => {
@@ -172,3 +186,16 @@ app.get("*", (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+
+cron.schedule(cronSchedule, async () => {
+  try {
+    await getLiveData();
+    // console.log('Data fetched and processed successfully:', result);
+  } catch (error) {
+    console.error('Error fetching or processing data:', error);
+  }
+});
+
+
+module.exports = { getLiveData };
