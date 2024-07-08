@@ -14,7 +14,7 @@ const TradeChart = () => {
     useEffect(() => {
         const fetchData = async () => {
             // Replace this with your actual endpoint or method to fetch data
-            const response = await fetch('/live-data');
+            const response = await fetch('/chart-data');
             const data = await response.json();
 
             console.log(data);

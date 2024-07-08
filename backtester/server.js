@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
-const { calculateSMA, backtestStrategy, getCoinGeckoData, executeLiveTrade, getPosition, loadJsonFile } = require("./utils");
+const { calculateSMA, backtestStrategy, getCoinGeckoData, executeLiveTrade, getPosition, loadJsonFile } = require("./functions");
 const app = express();
 const port = 3000;
 
@@ -115,8 +115,7 @@ app.get("/live-data", async (req, res)  => {
     var smaPeriod = 4; //14
     var smaValues = calculateSMA(priceData, smaPeriod);
     // var position = await getPosition()
-    var position = "long"
-    var trade = executeLiveTrade(priceData, smaValues, position) 
+    await executeLiveTrade(priceData, smaValues) 
    
 
     // buySellPoints = backtestStrategy(
@@ -138,6 +137,32 @@ app.get("/live-data", async (req, res)  => {
       buySellPoints: buySellPoints,
     });
   });
+
+  app.get("/chart-data", async (req, res)  => {
+    const rawData = JSON.parse(fs.readFileSync("coingecko.json", "utf-8"));
+
+    var priceData = rawData.prices.map((item) => {
+      return {
+        time: parseInt(item[0], 10), // Convert to milliseconds
+        close: parseFloat(item[1]),
+      };
+    });
+
+    var smaPeriod = 4;
+    var smaValues = calculateSMA(priceData, smaPeriod);
+
+    const buySellPoints = await loadJsonFile('trades.json');
+
+  
+    res.json({
+      timestamps: priceData.map((item) => item.time),
+      price: priceData.map((item) => item.close),
+      sma: smaValues,
+  
+      buySellPoints: buySellPoints,
+    });
+  });
+
 
 // All other GET requests not handled before will return the React app
 app.get("*", (req, res) => {

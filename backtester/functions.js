@@ -1,9 +1,13 @@
 const fetch = require("node-fetch");
 const fs = require("fs");
+const path = require('path');
+const { getPls, getDai, getDaiPlsBalances, MIN_PLS_BALANCE } = require("./pulsex");
+const { InsufficientInputAmountError } =  require('@uniswap/sdk')
+
+
 require("dotenv").config();
 
-
-// utils.js
+// functions.js
 function calculateSMA(data, length) {
   const sma = [];
   for (let i = 0; i < data.length; i++) {
@@ -109,7 +113,6 @@ function backtestStrategy(sma, smaLength, jsonData, initialCapital) {
 }
 
 function getCoinGeckoData() {
-
   const url =
     "https://api.coingecko.com/api/v3/coins/pulsechain/market_chart?vs_currency=usd&days=90&precision=full";
   const COINGECKO_API_KEy = process.env.COINGECKO_API_KEy;
@@ -136,75 +139,146 @@ function getCoinGeckoData() {
     .catch((err) => console.error("Error:", err));
 }
 
-async function executeLiveTrade(priceData, smaValues, position) {
+async function executeLiveTrade(priceData, smaValues) {
+  let position // short long
+  console.log("executeLiveTrade start");
+  let { daiBalance, plsBalance } = await getDaiPlsBalances();
+  if (daiBalance > 0 && plsBalance <= MIN_PLS_BALANCE) {
+    position = "dai";
+  } else {
+    position = "pls";
+  }
+
+  // console.log("Got balance", daiBalance, plsBalance, position);
+
+
   const currentPrice = priceData[priceData.length - 1].close;
   const currentTime = Number(priceData[priceData.length - 1].time);
   const currentSMA = smaValues[smaValues.length - 1];
 
-  let trade
-    let buySellPoint
-  if (position === null && currentPrice > currentSMA) {
+  console.log("Current conditions", currentPrice, currentSMA, currentTime, position);
+
+  let trade;
+  let buySellPoint;
+  if (position === "pls" && currentPrice < currentSMA) {
+  // if (true) {
     // Buy condition
     // trade = await buy(currentPrice, currentSMA, currentTime);
-    buySellPoint = {
-        type: "buy",
-        price: currentPrice,
-        sma: currentSMA,
-        timestamp:currentTime,
-        // hash: trade.transactionHash,
+    trade = await getDai();
+    // if (trade instanceof InsufficientInputAmountError || trade instanceof Error && trade.message.includes("Invariant failed") ) {
+    //   console.log("Insufficient Funds");
+    //   return;
+    // }
+     if (trade instanceof Error) {
+      console.log("Error submitting transaction trying again");
+      trade = await getDai();
+      if (trade instanceof Error) {
+        console.log("2nd error aborting transction");
+        logErrorToFile(trade)
+        return;
       }
-    console.log("Buy condition");
-  } else if (position === "long" && currentPrice < currentSMA) {
+    }
+
+    buySellPoint = {
+      type: "sell",
+      price: currentPrice,
+      sma: currentSMA,
+      timestamp: currentTime,
+      hash: trade.transactionHash,
+    };
+    console.log("sell condition");
+  } else if (position === "dai" && currentPrice > currentSMA) {
+  // } else if (true) {
     // Sell condition
     // trade = await sell(currentPrice, currentSMA, currentTime);
-    // trade = await sell(currentPrice, currentSMA, currentTime);
-    buySellPoint = {
-        type: "sell",
-        price: currentPrice,
-        sma: currentSMA,
-        timestamp: currentTime,
-        // hash: trade.transactionHash,
+
+    trade = await getPls();
+    // if (trade instanceof InsufficientInputAmountError || trade instanceof Error && trade.message.includes("Invariant failed")) {
+    //   console.log("Insufficient Funds");
+    //   return;
+    // }
+     if (trade instanceof Error) {
+      console.log("Error submitting transaction trying again");
+      trade = await getPls();
+      if (trade instanceof Error) {
+        console.log("2nd error aborting transction");
+        logErrorToFile(trade)
+        return;
       }
-    console.log("Sell condition");
+    }
+
+
+
+    buySellPoint = {
+      type: "buy",
+      price: currentPrice,
+      sma: currentSMA,
+      timestamp: currentTime,
+      hash: trade.transactionHash,
+    };
+    console.log("buy condition");
   }
+  else {
+    console.log("No trade condition");
+    return;
+  }
+  await appendToJsonFile("trades.json", buySellPoint);
 
-  await appendToJsonFile('trades.json', buySellPoint);
-
-  return { trade, buySellPoint }; // Return the trade details along with buy/sell points
+  // return { trade, buySellPoint }; // Return the trade details along with buy/sell points
 }
 
 async function appendToJsonFile(filePath, data) {
-    try {
-      // Read the existing JSON file
-      let existingData = await loadJsonFile(filePath)
+  try {
+    // Read the existing JSON file
+    let existingData = await loadJsonFile(filePath);
     //   console.log(existingData)
 
-        // console.log(data)
-      // Append the new data to the existing data
-      existingData.push(data);
-  
-      // Write the updated data back to the JSON file
-      await fs.promises.writeFile(filePath, JSON.stringify(existingData, null, 2));
-    } catch (err) {
-      console.error('Error writing to JSON file:', err);
-    }
-  }
+    // console.log(data)
+    // Append the new data to the existing data
+    existingData.push(data);
 
-  async function loadJsonFile(filePath) {
-    try {
-      const fileContents = await fs.promises.readFile(filePath, 'utf8');
-      return JSON.parse(fileContents);
-    } catch (err) {
-      console.error('Error reading JSON file:', err);
-      return [];
-    }
+    // Write the updated data back to the JSON file
+    await fs.promises.writeFile(
+      filePath,
+      JSON.stringify(existingData, null, 2)
+    );
+  } catch (err) {
+    console.error("Error writing to JSON file:", err);
   }
+}
 
+async function loadJsonFile(filePath) {
+  try {
+    const fileContents = await fs.promises.readFile(filePath, "utf8");
+    return JSON.parse(fileContents);
+  } catch (err) {
+    console.error("Error reading JSON file:", err);
+    return [];
+  }
+}
 
 async function getPosition() {
-    position = "long"
-    return position; // Return the trade details along with buy/sell points
+  position = "long";
+  return position; // Return the trade details along with buy/sell points
+}
+
+
+function logErrorToFile(error) {
+  let errorMessage
+  const logFilePath = path.join(__dirname, 'error.log'); // Specify your log file path
+  if (error instanceof InsufficientInputAmountError || error instanceof Error && error.message.includes("Invariant failed")) {
+    errorMessage = `${new Date().toISOString()} - Insufficient Funds \n\n`;
   }
+  else {
+    errorMessage = `${new Date().toISOString()} - ${error.stack || error}\n\n`;
+  }
+  fs.appendFile(logFilePath, errorMessage, (err) => {
+    if (err) {
+      console.error('Failed to write to log file:', err);
+    }
+  });
+}
+
 
 // Correctly export the functions
 module.exports = {
@@ -213,5 +287,7 @@ module.exports = {
   getCoinGeckoData,
   executeLiveTrade,
   getPosition,
-  loadJsonFile
+  loadJsonFile,
 };
+
+
