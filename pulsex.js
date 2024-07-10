@@ -14,7 +14,7 @@ const MIN_PLS_BALANCE = 10000;
 
 // Initialize provider and wallet
 const provider = new ethers.getDefaultProvider(
-  "wss://pulsechain-rpc.publicnode.com"
+  "https://pulsechain-rpc.publicnode.com"
 );
 const privateKey = process.env.PRIVATE_KEY;
 const walletAddress = process.env.WALLET_ADDRESS;

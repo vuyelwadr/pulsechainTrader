@@ -4,7 +4,7 @@ const path = require('path');
 const { getPls, getDai, getDaiPlsBalances, MIN_PLS_BALANCE } = require("./pulsex");
 const { InsufficientInputAmountError } =  require('@uniswap/sdk')
 // const { Writable } = require('stream');
-
+const nodemailer = require('nodemailer');
 
 require("dotenv").config();
 
@@ -189,6 +189,7 @@ async function executeLiveTrade(priceData, smaValues) {
       hash: trade.transactionHash,
     };
     console.log("sell condition");
+    sendEmail("Sell", buySellPoint)
   } else if (position === "dai" && currentPrice > currentSMA) {
   // } else if (true) {
     // Sell condition
@@ -219,6 +220,7 @@ async function executeLiveTrade(priceData, smaValues) {
       hash: trade.transactionHash,
     };
     console.log("buy condition");
+    sendEmail("Buy", buySellPoint)
   }
   else {
     console.log("No trade condition");
@@ -282,6 +284,44 @@ function logErrorToFile(error) {
   });
 }
 
+// Configure nodemailer
+const EMAIL = process.env.EMAIL;
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
+// const transporter = nodemailer.createTransport({
+//   service: 'gmail',
+//   auth: {
+//       user: EMAIL, // replace with your email
+//       pass: EMAIL_PASSWORD   // replace with your email password or app-specific password
+//   }
+// });
+
+// Configure nodemailer with cPanel SMTP settings
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_SMTP_HOST,
+  port: process.env.EMAIL_SMTP_PORT,
+  secure: process.env.EMAIL_SMTP_SECURE === 'true', // true for 465, false for other ports
+  auth: {
+      user: process.env.EMAIL,
+      pass: process.env.EMAIL_PASSWORD
+  }
+});
+
+
+async function sendEmail(subject, text) {
+  let mailOptions = {
+      from: EMAIL,  
+      to: EMAIL,  
+      subject: subject,
+      text: text
+  };
+
+  try {
+      let info = await transporter.sendMail(mailOptions);
+  } catch (error) {
+      console.error('Error sending email: ' + error);
+  }
+}
+
 
 // Create a writable stream to capture console.log output
 // const logStream = new Writable({
@@ -306,6 +346,7 @@ module.exports = {
   executeLiveTrade,
   getPosition,
   loadJsonFile,
+  sendEmail
 };
 
 

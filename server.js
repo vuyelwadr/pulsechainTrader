@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const express = require("express");
 
-const { calculateSMA, backtestStrategy, getCoinGeckoData, executeLiveTrade, getPosition, loadJsonFile } = require("./functions");
+const { calculateSMA, backtestStrategy, getCoinGeckoData, executeLiveTrade, getPosition, loadJsonFile, sendEmail } = require("./functions");
 const app = express();
 const port = process.env.PORT || 3000;
 const cronSchedule = process.env.CRON_SCHEDULE || '*/15 * * * *';
@@ -198,6 +198,7 @@ cron.schedule(cronSchedule, async () => {
 });
 
 // getLiveData();
+// sendEmail("TEST", "TEST EMAIL");
 
 module.exports = { getLiveData };
 
@@ -207,5 +208,5 @@ module.exports = { getLiveData };
 // source /home/vuyeezti/nodevenv/trade.vuyelwa.com/10/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com && npm run production
 
 
-// ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}' | xargs kill >/dev/null 2>&1 && source /home/vuyeezti/nodevenv/trade.vuyelwa.com/10/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com && npm run production
+// ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}' | xargs kill >/dev/null 2>&1 && source /home/vuyeezti/nodevenv/trade.vuyelwa.com/pulsechainTrader/22/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com/pulsechainTrader && npm run production
 // curl http://localhost:3000/live-data
