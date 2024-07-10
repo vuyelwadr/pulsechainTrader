@@ -3,8 +3,9 @@ import { Chart } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, Title, Tooltip, Legend, TimeScale, PointElement, LineElement, ScatterController, LineController } from 'chart.js';
 import 'chartjs-adapter-luxon';
 import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
+import zoomPlugin from 'chartjs-plugin-zoom';
 
-ChartJS.register(CategoryScale, LinearScale, CandlestickController,LineController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
+ChartJS.register(zoomPlugin,CategoryScale, LinearScale, CandlestickController,LineController, CandlestickElement, ScatterController, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
 
 const TradeChart = () => {
     const [chartData, setChartData] = useState({ datasets: [] });
@@ -135,6 +136,29 @@ const options = {
             ticks: {
                 callback: function(value) {
                     return value.toFixed(10);  // Format the tick values to 5 decimal places
+                }
+            }
+        }
+    },
+    plugins: {
+        zoom: {
+            pan: {
+                enabled: true,
+                mode: 'xy',
+                onPanComplete: () => {
+                    chartRef.current.update();
+                }
+            },
+            zoom: {
+                wheel: {
+                    enabled: true,
+                },
+                pinch: {
+                    enabled: true,
+                },
+                mode: 'xy',
+                onZoomComplete: () => {
+                    chartRef.current.update();
                 }
             }
         }

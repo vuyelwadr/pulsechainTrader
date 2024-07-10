@@ -92,15 +92,15 @@ function backtestStrategy(sma, smaLength, jsonData, initialCapital) {
     (initialCapital / firstPrice) * lastPrice - initialCapital;
 
   console.log(`SMA: ${smaLength}`);
-  console.log(
-    `buy and hold profit: ${buyAndHoldProfit}  ${
-      (buyAndHoldProfit / initialCapital) * 100
-    }%`
-  );
+  // console.log(
+  //   `buy and hold profit: ${buyAndHoldProfit}  ${
+  //     (buyAndHoldProfit / initialCapital) * 100
+  //   }%`
+  // );
   console.log(`Total profit: ${profit}  ${(profit / initialCapital) * 100}%`);
-  console.log(`Ending account size: ${accountSize}`);
-  console.log(`Number trades: ${trades}`); // Print the number of unique trade days
-  console.log(`Number of days traded: ${daysTraded}`); // Print the number of unique trade days
+  // console.log(`Ending account size: ${accountSize}`);
+  // console.log(`Number trades: ${trades}`); // Print the number of unique trade days
+  // console.log(`Number of days traded: ${daysTraded}`); // Print the number of unique trade days
 
   return {
     sma,
@@ -115,7 +115,8 @@ function backtestStrategy(sma, smaLength, jsonData, initialCapital) {
 
 function getCoinGeckoData() {
   const url =
-    "https://api.coingecko.com/api/v3/coins/pulsechain/market_chart?vs_currency=usd&days=90&precision=full";
+    "https://api.coingecko.com/api/v3/coins/pulsechain/market_chart?vs_currency=usd&days=365&precision=full";
+    // "https://api.coingecko.com/api/v3/coins/pulsechain/market_chart?vs_currency=usd&days=90&precision=full";
   const COINGECKO_API_KEy = process.env.COINGECKO_API_KEy;
   const options = {
     method: "GET",
@@ -150,7 +151,7 @@ async function executeLiveTrade(priceData, smaValues) {
     position = "pls";
   }
 
-  // console.log("Got balance", daiBalance, plsBalance, position);
+  console.log("Got balance", daiBalance, plsBalance, position);
 
 
   const currentPrice = priceData[priceData.length - 1].close;
@@ -224,6 +225,7 @@ async function executeLiveTrade(priceData, smaValues) {
     return;
   }
   await appendToJsonFile("trades.json", buySellPoint);
+  return;
 
   // return { trade, buySellPoint }; // Return the trade details along with buy/sell points
 }

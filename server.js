@@ -197,5 +197,15 @@ cron.schedule(cronSchedule, async () => {
   }
 });
 
+// getLiveData();
 
 module.exports = { getLiveData };
+
+// https://stackoverflow.com/questions/46265983/setting-up-subdomains-with-nginx-and-namecheap
+
+// ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}' | xargs kill >/dev/null 2>&1
+// source /home/vuyeezti/nodevenv/trade.vuyelwa.com/10/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com && npm run production
+
+
+// ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}' | xargs kill >/dev/null 2>&1 && source /home/vuyeezti/nodevenv/trade.vuyelwa.com/10/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com && npm run production
+// curl http://localhost:3000/live-data

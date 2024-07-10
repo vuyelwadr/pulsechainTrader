@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Routes, Link } from 'react-router-dom';
 import BacktestCandleStick from './BacktestCandleStick';
-import Backtest from './Backtest';
+import BacktestChart from './Backtest';
 import Trade from './Trade';
 
 function App() {
@@ -17,7 +17,7 @@ function App() {
             </nav>
             <Routes>
                 <Route path="/BacktestCandleStick" element={<BacktestCandleStick />} />
-                <Route path="/Backtest" element={<Backtest />} />
+                <Route path="/Backtest" element={<BacktestChart />} />
                 <Route path="/trade" element={<Trade />} />
                 <Route path="/" element={<div><h1>Home Page</h1></div>} />
             </Routes>
