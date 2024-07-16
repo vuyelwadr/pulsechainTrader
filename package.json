@@ -9,6 +9,7 @@
     "chartjs-adapter-luxon": "^1.3.1",
     "chartjs-chart-financial": "^0.2.1",
     "chartjs-plugin-zoom": "^2.0.1",
+    "dotenv": "^16.4.5",
     "ethers": "^5.7.2",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
@@ -24,8 +25,8 @@
   "proxy": "http://localhost:3000",
   "scripts": {
     "start": "DEBUG=ethers:* concurrently \"npm run client\" \"npm run server\"",
-    "client": "cross-env PORT=3002 NODE_OPTIONS=--openssl-legacy-provider react-scripts start",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
+    "client": "cross-env PORT=3002 react-scripts start",
+    "build": "cross-env react-scripts build",
     "build2": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "test": "cross-env NODE_OPTIONS=--openssl-legacy-provider react-scripts test",
     "eject": "react-scripts eject",

@@ -7,7 +7,7 @@ const express = require("express");
 const { calculateSMA, backtestStrategy, getCoinGeckoData, executeLiveTrade, getPosition, loadJsonFile, sendEmail } = require("./functions");
 const app = express();
 const port = process.env.PORT || 3000;
-const cronSchedule = process.env.CRON_SCHEDULE || '*/15 * * * *';
+const cronSchedule = process.env.CRON_SCHEDULE || '*/30 * * * *';
 
 let initialCapital = 1000; // Starting capital
 
@@ -191,14 +191,14 @@ app.listen(port, () => {
 cron.schedule(cronSchedule, async () => {
   try {
     await getLiveData();
-    // console.log('Data fetched and processed successfully:', result);
+    sendEmail("Data updated", "Data updated");
   } catch (error) {
     console.error('Error fetching or processing data:', error);
   }
 });
 
-// getLiveData();
-// sendEmail("TEST", "TEST EMAIL");
+getLiveData();
+sendEmail("Server Start", "Server Started");
 
 module.exports = { getLiveData };
 
@@ -206,7 +206,11 @@ module.exports = { getLiveData };
 
 // ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}' | xargs kill >/dev/null 2>&1
 // source /home/vuyeezti/nodevenv/trade.vuyelwa.com/10/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com && npm run production
-
-
 // ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}' | xargs kill >/dev/null 2>&1 && source /home/vuyeezti/nodevenv/trade.vuyelwa.com/pulsechainTrader/22/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com/pulsechainTrader && npm run production
+
+// pids=$(ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}'); if [ -n "$pids" ]; then echo "$pids" | xargs kill; fi; pids=$(awk '$2 == "00000000:0BB8" {print $9}' /proc/net/tcp /proc/net/tcp6 2>/dev/null | xargs -I{} sh -c 'basename $(readlink /proc/{}/fd/* 2>/dev/null) 2>/dev/null | grep -q "node" && echo {}' | grep -o '[0-9]*'); if [ -n "$pids" ]; then echo "$pids" | xargs kill; fi; source /home/vuyeezti/nodevenv/trade.vuyelwa.com/pulsechainTrader/22/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com/pulsechainTrader && npm run production
 // curl http://localhost:3000/live-data
+
+
+
+// if ! curl -s http://localhost:3000/live-data | grep -q "timestamps"; then pids=$(ps aux | grep 'server.js --scripts-prepend-node-path' | grep 'vuyeezti' | grep -v grep | awk '{print $2}'); if [ -n "$pids" ]; then echo "$pids" | xargs kill; fi; pids=$(awk '$2 == "00000000:0BB8" {print $9}' /proc/net/tcp /proc/net/tcp6 2>/dev/null | xargs -I{} sh -c 'basename $(readlink /proc/{}/fd/* 2>/dev/null) 2>/dev/null | grep -q "node" && echo {}' | grep -o '[0-9]*'); if [ -n "$pids" ]; then echo "$pids" | xargs kill; fi; source /home/vuyeezti/nodevenv/trade.vuyelwa.com/pulsechainTrader/22/bin/activate && cd /home/vuyeezti/trade.vuyelwa.com/pulsechainTrader && npm run production; fi
